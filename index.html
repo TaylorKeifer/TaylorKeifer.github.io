@@ -159,5 +159,21 @@
   <div style="position: fixed; bottom: 20px; right: 20px;">
     <button id="return-to-top" style="font-size: 18px; padding: 12px 24px;" onclick="window.scrollTo({top:0, behavior:'smooth'});">Return to Top</button>
   </div>
+  <div id="visitor-counter" style="position: fixed; bottom: 20px; left: 20px; font-size: 16px; padding: 8px 12px; background: rgba(255,255,255,0.9); border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.18);">
+    Visitors: <span id="visitor-count" aria-live="polite">...</span>
+  </div>
+
+  <script>
+    (function(){
+      const namespace = 'taylorkeifer_github_io';
+      const key = 'visitor_count';
+      const el = document.getElementById('visitor-count');
+      if (!el) return;
+      fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`)
+        .then(res => res.json())
+        .then(data => { if (data && typeof data.value !== 'undefined') el.textContent = data.value; else el.textContent = '—'; })
+        .catch(() => { el.textContent = '—'; });
+    })();
+  </script>
 </body>
 </html>
