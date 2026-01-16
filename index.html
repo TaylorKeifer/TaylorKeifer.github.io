@@ -203,9 +203,9 @@
       <img src="alert_log_1.jpg" alt="Alert Logging for End User Data Collection">
 
       <h3 id="can" data-en="Customized CAN Communication" data-de="Maßgeschneiderte CAN-Kommunikation">Customized CAN Communication</h3>
-      <p data-en="TEST I design and implement custom CAN communication solutions tailored to vehicle and system requirements, including SAE J1939 and other certified CAN-based protocols. My work covers network architecture, message definition, signal mapping, and integration across ECUs, HMIs, sensors, and control units.<br>" data-de="Ich entwerfe und implementiere kundenspezifische CAN-Kommunikationslösungen, die auf Fahrzeug- und Systemanforderungen zugeschnitten sind, einschließlich SAE J1939 und anderer zertifizierter CAN-basierter Protokolle. Meine Arbeit umfasst Netzwerkarchitektur, Nachrichtendefinition, Signalzuordnung und Integration über ECUs, HMIs, Sensoren und Steuerungseinheiten.<br>">I design and implement custom CAN communication solutions tailored to vehicle and system requirements, including SAE J1939 and other certified CAN-based protocols. My work covers network architecture, message definition, signal mapping, and integration across ECUs, HMIs, sensors, and control units.<br>
-      <img src="CanMessage_1.JPG" alt="Customized CAN Communication">
-      <img src="code_example_1.JPG" alt="Customized CAN Communication">
+      <p data-en="I design and implement custom CAN communication solutions tailored to vehicle and system requirements, including SAE J1939 and other certified CAN-based protocols. My work covers network architecture, message definition, signal mapping, and integration across ECUs, HMIs, sensors, and control units.<br>" data-de="Ich entwerfe und implementiere kundenspezifische CAN-Kommunikationslösungen, die auf Fahrzeug- und Systemanforderungen zugeschnitten sind, einschließlich SAE J1939 und anderer zertifizierter CAN-basierter Protokolle. Meine Arbeit umfasst Netzwerkarchitektur, Nachrichtendefinition, Signalzuordnung und Integration über ECUs, HMIs, Sensoren und Steuerungseinheiten.<br>">I design and implement custom CAN communication solutions tailored to vehicle and system requirements, including SAE J1939 and other certified CAN-based protocols. My work covers network architecture, message definition, signal mapping, and integration across ECUs, HMIs, sensors, and control units.<br>
+      <img src="CanMessage_1.JPG" alt="Customized CAN Communication 1">
+      <img src="code_example_1.JPG" alt="Customized CAN Communication 2">
       <p data-en="Solutions are developed with a focus on reliability, interoperability, and compliance, ensuring stable communication in harsh mobile environments. I provide clear documentation and diagnostics support to enable efficient commissioning, troubleshooting, and long-term system maintenance." data-de="Lösungen werden mit Fokus auf Zuverlässigkeit, Interoperabilität und Compliance entwickelt, um stabile Kommunikation in harschen mobilen Umgebungen zu gewährleisten. Ich biete klare Dokumentation und Diagnoseunterstützung, um effiziente Inbetriebnahme, Fehlerbehebung und langfristige Systemwartung zu ermöglichen.">Solutions are developed with a focus on reliability, interoperability, and compliance, ensuring stable communication in harsh mobile environments. I provide clear documentation and diagnostics support to enable efficient commissioning, troubleshooting, and long-term system maintenance.</p>
 
       <h3 id="plc" data-en="Customized PLC Logic" data-de="Maßgeschneiderte PLC-Logik">Customized PLC Logic</h3>
@@ -253,14 +253,27 @@
         }
       });
 
-      // Language switching
+      // Language switching with refresh
       const langSelect = document.getElementById('lang-select');
-      langSelect.addEventListener('change', (e) => {
-        const lang = e.target.value;
+      const applyLanguage = (lang) => {
         document.documentElement.lang = lang;
         document.querySelectorAll('[data-' + lang + ']').forEach(el => {
           el.innerHTML = el.getAttribute('data-' + lang);
         });
+        document.querySelectorAll('img[data-' + lang + ']').forEach(img => {
+          img.alt = img.getAttribute('data-' + lang);
+        });
+      };
+
+      // On load, check for saved language
+      const savedLang = localStorage.getItem('selectedLang') || 'en';
+      langSelect.value = savedLang;
+      applyLanguage(savedLang);
+
+      langSelect.addEventListener('change', (e) => {
+        const lang = e.target.value;
+        localStorage.setItem('selectedLang', lang);
+        window.location.reload();
       });
     })();
   </script>
