@@ -40,6 +40,18 @@
     .sidebar button { display: block; width: 100%; margin-top: 12px; font-size: 16px; padding: 10px; }
     .content { flex: 1; }
     img { max-width: 100%; height: auto; }
+    #visitor-counter {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      font-size: 16px;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.9);
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+      display: none;
+      z-index: 1001;
+    }
     @media (max-width: 820px) {
       .sidebar { position: static; width: auto; margin-bottom: 16px; }
       .container { padding-left: 16px; }
@@ -60,9 +72,6 @@
         <li><a href="#guides">Guides and Walkthroughs</a></li>
       </ul>
       <button id="return-to-top" onclick="window.scrollTo({top:0, behavior:'smooth'});">Return to Top</button>
-      <div id="visitor-counter" style="margin-top:10px; font-size:15px;">
-        Visitors: <span id="visitor-count" aria-live="polite">...</span>
-      </div>
     </aside>
 
     <main class="content">
@@ -205,16 +214,35 @@
     </main>
   </div>
 
+  <div id="visitor-counter">
+    Visitors: <span id="visitor-count" aria-live="polite">...</span>
+  </div>
+
   <script>
     (function(){
       const namespace = 'taylorkeifer_github_io';
       const key = 'visitor_count';
       const el = document.getElementById('visitor-count');
-      if (!el) return;
+      const counterDiv = document.getElementById('visitor-counter');
+      if (!el || !counterDiv) return;
+
+      // Fetch and display count on load
       fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`)
         .then(res => res.json())
         .then(data => { if (data && typeof data.value !== 'undefined') el.textContent = data.value; else el.textContent = '—'; })
         .catch(() => { el.textContent = '—'; });
+
+      // Show/hide on Shift key hold
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Shift') {
+          counterDiv.style.display = 'block';
+        }
+      });
+      document.addEventListener('keyup', (e) => {
+        if (e.key === 'Shift') {
+          counterDiv.style.display = 'none';
+        }
+      });
     })();
   </script>
 </body>
