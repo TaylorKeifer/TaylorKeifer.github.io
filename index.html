@@ -96,6 +96,7 @@
       <h3 id="refuelers" data-en="10K Gallon refueler for Port Authority of New York New Jersey" data-de="10.000-Gallonen-Betankungsanlage für die Port Authority of New York New Jersey">10K Gallon refueler for Port Authority of New York New Jersey</h3>
       <img src="10k_port_authority.jpg" alt="10K Port Authority Refueler">
       <p data-en="Integrated HMI <br> Built to spec for project bid <br> PLC logic system for redundancy<br> DOT/Over-the-road approved<br> Transmission Driven pumping system - 800 gpm<br>" data-de="Integrierte HMI <br> Nach Spezifikation für Projektangebot gebaut <br> SPS-Logiksystem für Redundanz<br> DOT/Über-die-Straße zugelassen<br> Getriebegetriebene Pumpsystem - 800 gpm<br>">Integrated HMI <br>
+
       Built to spec for project bid <br>
       PLC logic system for redundancy<br>
       DOT/Over-the-road approved<br>
@@ -260,7 +261,7 @@
         const lang = e.target.value;
         document.documentElement.lang = lang;
         document.querySelectorAll('[data-' + lang + ']').forEach(el => {
-          el.innerText = el.getAttribute('data-' + lang);
+          el.innerHTML = el.getAttribute('data-' + lang);
         });
       });
     })();
