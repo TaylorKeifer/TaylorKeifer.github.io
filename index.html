@@ -235,11 +235,14 @@
       const counterDiv = document.getElementById('visitor-counter');
       if (!el || !counterDiv) return;
 
-      // Fetch and display count on load
+      // Fetch and update count on load (keep counter hidden by default; show on Shift)
       fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`)
         .then(res => res.json())
-        .then(data => { if (data && typeof data.value !== 'undefined') el.textContent = data.value; else el.textContent = '—'; })
-        .catch(() => { el.textContent = '—'; });
+        .then(data => {
+          if (data && typeof data.value !== 'undefined') el.textContent = data.value;
+          else el.textContent = '—';
+        })
+        .catch((err) => { console.error('Count API error:', err); el.textContent = '—'; });
 
       // Show/hide on Shift key hold
       document.addEventListener('keydown', (e) => {
