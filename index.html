@@ -49,7 +49,7 @@
       background: rgba(255,255,255,0.9);
       border-radius: 6px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.18);
-      display: block;
+      display: none;
       z-index: 1001;
     }
     @media (max-width: 820px) {
@@ -251,12 +251,24 @@
           }
         })
         .catch((err) => {
-          console.error('Count API error:', err);
-          el.textContent = localVisits + ' (local)';
+            console.error('Count API error:', err);
+            el.textContent = localVisits + ' (local)';
+          });
+
+        // Show/hide on Shift key hold (keep counter hidden by default)
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Shift') {
+            counterDiv.style.display = 'block';
+          }
+        });
+        document.addEventListener('keyup', (e) => {
+          if (e.key === 'Shift') {
+            counterDiv.style.display = 'none';
+          }
         });
 
-      // Language switching with refresh
-      const langSelect = document.getElementById('lang-select');
+        // Language switching with refresh
+        const langSelect = document.getElementById('lang-select');
       const applyLanguage = (lang) => {
         document.documentElement.lang = lang;
         document.querySelectorAll('[data-' + lang + ']').forEach(el => {
