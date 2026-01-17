@@ -233,12 +233,14 @@
       const key = 'visitor_count';
       const el = document.getElementById('visitor-count');
       const counterDiv = document.getElementById('visitor-counter');
+      console.debug('visitor-counter: init', { elExists: !!el, counterDivExists: !!counterDiv });
       if (!el || !counterDiv) return;
 
       // Local per-user visit counter (fallback + display)
       const localKey = 'local_visit_count';
       const localVisits = Number(localStorage.getItem(localKey) || 0) + 1;
       localStorage.setItem(localKey, String(localVisits));
+      counterDiv.title = 'counter: initializing';
 
       // Unique-visitor logic: only increment CountAPI when the visitor
       // hasn't been counted within the TTL. Uses localStorage to avoid
@@ -250,6 +252,7 @@
         const stored = JSON.parse(localStorage.getItem(countedKey) || 'null');
         if (stored && stored.ts && (Date.now() - stored.ts) < ttl) counted = true;
       } catch (e) { counted = false; }
+      console.debug('visitor-counter: state', { localVisits, counted });
 
       const showValue = (v) => {
         if (typeof v === 'number') el.textContent = v + ' (you: ' + localVisits + ')';
@@ -261,28 +264,39 @@
         fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`)
           .then(res => res.json())
           .then(data => {
+            console.debug('countapi hit response', data);
             if (data && typeof data.value !== 'undefined') {
               showValue(data.value);
               localStorage.setItem(countedKey, JSON.stringify({ ts: Date.now() }));
+              counterDiv.title = 'counted: remote increment';
             } else {
               showValue(null);
+              counterDiv.title = 'counted: remote no-value';
             }
           })
           .catch((err) => {
             console.error('Count API error:', err);
             showValue(null);
+            counterDiv.title = 'countapi error';
           });
       } else {
         // Already counted within TTL: just fetch current value without incrementing
         fetch(`https://api.countapi.xyz/get/${namespace}/${key}`)
           .then(res => res.json())
           .then(data => {
-            if (data && typeof data.value !== 'undefined') showValue(data.value);
-            else showValue(null);
+            console.debug('countapi get response', data);
+            if (data && typeof data.value !== 'undefined') {
+              showValue(data.value);
+              counterDiv.title = 'counted: already within TTL';
+            } else {
+              showValue(null);
+              counterDiv.title = 'counted: get no-value';
+            }
           })
           .catch((err) => {
             console.error('Count API get error:', err);
             showValue(null);
+            counterDiv.title = 'countapi get error';
           });
       }
 
