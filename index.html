@@ -63,7 +63,7 @@
     <aside class="sidebar">
       <h2 data-en="Index" data-de="Index">Index</h2>
       <ul>
-        <li><a href="#refuelers" data-en="Refuelers" data-de="Betankungsanlagen">Refuelers</a></li>
+        <li><a href="#refuelers" data-en="Refuelers" data-de="Refuelers">Refuelers</a></li>
         <li><a href="#hirail" data-en="Hi-Rail Equipment" data-de="Hi-Rail-Ausrüstung">Hi-Rail Equipment</a></li>
         <li><a href="#electrical" data-en="Electrical Systems" data-de="Elektrische Systeme">Electrical Systems</a></li>
         <li><a href="#hydraulics" data-en="Hydraulic Systems" data-de="Hydraulische Systeme">Hydraulic Systems</a></li>
@@ -173,7 +173,7 @@
       <p data-en="Designs account for pressure requirements, air quality, duty cycles, response times, and environmental factors. I develop clear schematics and documentation that support efficient installation, commissioning, and long-term serviceability in industrial and mobile applications." data-de="Designs berücksichtigen Druckanforderungen, Luftqualität, Betriebszyklen, Reaktionszeiten und Umweltfaktoren. Ich entwickle klare Schematics und Dokumentation, die effiziente Installation, Inbetriebnahme und langfristige Wartbarkeit in industriellen und mobilen Anwendungen unterstützen.">Designs account for pressure requirements, air quality, duty cycles, response times, and environmental factors. I develop clear schematics and documentation that support efficient installation, commissioning, and long-term serviceability in industrial and mobile applications.</p>
 
       <h3 id="piping" data-en="Piping Systems" data-de="Rohrsysteme">Piping Systems</h3>
-      <p data-en="I design custom fuel piping systems for jet refuelers, engineered to meet stringent safety, performance, and regulatory requirements. My work includes system layout, component selection, and routing design to ensure reliable fuel delivery, pressure control, and contamination prevention." data-de="Ich entwerfe kundenspezifische Kraftstoff-Rohrsysteme für Jet-Betankungsanlagen, die strenge Sicherheits-, Leistungs- und regulatorische Anforderungen erfüllen. Meine Arbeit umfasst Systemlayout, Komponentenauswahl und Routingdesign, um zuverlässige Kraftstofflieferung, Drucksteuerung und Kontaminationsprävention zu gewährleisten.">I design custom fuel piping systems for jet refuelers, engineered to meet stringent safety, performance, and regulatory requirements. My work includes system layout, component selection, and routing design to ensure reliable fuel delivery, pressure control, and contamination prevention.</p>
+      <p data-en="I design custom fuel piping systems for jet refuelers, engineered to meet stringent safety, performance, and regulatory requirements. My work includes system layout, component selection, and routing design to ensure reliable fuel delivery, pressure control, and contamination prevention." data-de="Ich entwerfe kundenspezifische Kraftstoff-Rohrsysteme für Jet Refueler, die strenge Sicherheits-, Leistungs- und regulatorische Anforderungen erfüllen. Meine Arbeit umfasst Systemlayout, Komponentenauswahl und Routingdesign, um zuverlässige Kraftstofflieferung, Drucksteuerung und Kontaminationsprävention zu gewährleisten.">I design custom fuel piping systems for jet refuelers, engineered to meet stringent safety, performance, and regulatory requirements. My work includes system layout, component selection, and routing design to ensure reliable fuel delivery, pressure control, and contamination prevention.</p>
       <img src="Images/piping_1.jpg" alt="Piping Systems">
       <p data-en="Designs account for flow rates, pressure losses, thermal expansion, vibration, and service access, as well as integration with pumps, valves, filtration, and metering systems. I produce clear schematics and installation documentation that support safe operation, efficient assembly, and long-term maintainability in demanding airport and mobile fueling environments." data-de="Designs berücksichtigen Durchflussraten, Druckverluste, thermische Ausdehnung, Vibration und Servicezugang sowie Integration mit Pumpen, Ventilen, Filtration und Messsystemen. Ich produziere klare Schematics und Installationsdokumentation, die sicheren Betrieb, effiziente Montage und langfristige Wartbarkeit in anspruchsvollen Flughafen- und mobilen Betankungsumgebungen unterstützen.">Designs account for flow rates, pressure losses, thermal expansion, vibration, and service access, as well as integration with pumps, valves, filtration, and metering systems. I produce clear schematics and installation documentation that support safe operation, efficient assembly, and long-term maintainability in demanding airport and mobile fueling environments.</p>
 
@@ -240,20 +240,51 @@
       const localVisits = Number(localStorage.getItem(localKey) || 0) + 1;
       localStorage.setItem(localKey, String(localVisits));
 
-      // Try CountAPI; if it works show total, otherwise show local fallback
-      fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data && typeof data.value !== 'undefined') {
-            el.textContent = data.value + ' (you: ' + localVisits + ')';
-          } else {
-            el.textContent = localVisits + ' (local)';
-          }
-        })
-        .catch((err) => {
+      // Unique-visitor logic: only increment CountAPI when the visitor
+      // hasn't been counted within the TTL. Uses localStorage to avoid
+      // counting page refreshes. TTL set to 24 hours.
+      const countedKey = 'countapi_counted_v1';
+      const ttl = 24 * 60 * 60 * 1000; // 24 hours
+      let counted = false;
+      try {
+        const stored = JSON.parse(localStorage.getItem(countedKey) || 'null');
+        if (stored && stored.ts && (Date.now() - stored.ts) < ttl) counted = true;
+      } catch (e) { counted = false; }
+
+      const showValue = (v) => {
+        if (typeof v === 'number') el.textContent = v + ' (you: ' + localVisits + ')';
+        else el.textContent = localVisits + ' (local)';
+      };
+
+      if (!counted) {
+        // First visit within TTL: increment remote counter
+        fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data && typeof data.value !== 'undefined') {
+              showValue(data.value);
+              localStorage.setItem(countedKey, JSON.stringify({ ts: Date.now() }));
+            } else {
+              showValue(null);
+            }
+          })
+          .catch((err) => {
             console.error('Count API error:', err);
-            el.textContent = localVisits + ' (local)';
+            showValue(null);
           });
+      } else {
+        // Already counted within TTL: just fetch current value without incrementing
+        fetch(`https://api.countapi.xyz/get/${namespace}/${key}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data && typeof data.value !== 'undefined') showValue(data.value);
+            else showValue(null);
+          })
+          .catch((err) => {
+            console.error('Count API get error:', err);
+            showValue(null);
+          });
+      }
 
         // Show/hide on Shift key hold (keep counter hidden by default)
         document.addEventListener('keydown', (e) => {
