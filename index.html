@@ -259,10 +259,24 @@
         else el.textContent = localVisits + ' (local)';
       };
 
+      // helper: try direct fetch, if network/CORS fails retry via a proxy
+      const proxyPrefix = 'https://api.allorigins.win/raw?url=';
+      function fetchJsonWithProxy(url) {
+        return fetch(url).then(res => {
+          if (!res.ok) throw new Error('non-ok');
+          return res.json();
+        }).catch((err) => {
+          console.warn('Direct fetch failed, retrying via proxy', err);
+          return fetch(proxyPrefix + encodeURIComponent(url)).then(r => {
+            if (!r.ok) throw new Error('proxy non-ok');
+            return r.json();
+          });
+        });
+      }
+
       if (!counted) {
-        // First visit within TTL: increment remote counter
-        fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`)
-          .then(res => res.json())
+        // First visit within TTL: increment remote counter (try proxy fallback)
+        fetchJsonWithProxy(`https://api.countapi.xyz/hit/${namespace}/${key}`)
           .then(data => {
             console.debug('countapi hit response', data);
             if (data && typeof data.value !== 'undefined') {
@@ -275,14 +289,13 @@
             }
           })
           .catch((err) => {
-            console.error('Count API error:', err);
+            console.error('Count API error after proxy attempt:', err);
             showValue(null);
             counterDiv.title = 'countapi error';
           });
       } else {
         // Already counted within TTL: just fetch current value without incrementing
-        fetch(`https://api.countapi.xyz/get/${namespace}/${key}`)
-          .then(res => res.json())
+        fetchJsonWithProxy(`https://api.countapi.xyz/get/${namespace}/${key}`)
           .then(data => {
             console.debug('countapi get response', data);
             if (data && typeof data.value !== 'undefined') {
@@ -294,7 +307,7 @@
             }
           })
           .catch((err) => {
-            console.error('Count API get error:', err);
+            console.error('Count API get error after proxy attempt:', err);
             showValue(null);
             counterDiv.title = 'countapi get error';
           });
